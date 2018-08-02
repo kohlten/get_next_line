@@ -101,5 +101,8 @@ void			ft_lstiter		(t_list *lst, void (*f)(t_list *elem));
 t_list			*ft_lstmap		(t_list *lst, t_list *(*f)(t_list *elem));
 void			*ft_realloc		(void *ptr, size_t size, size_t prev_size);
 void			ft_putnbrl		(int nbr);
+char			*ft_strndup		(const char *s1, size_t num);
+char			*ft_strjoinch	(char const *s1, char c);
+int				ft_copyuntil	(char **dst, char *src, char c);
 
 #endif

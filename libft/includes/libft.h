@@ -15,17 +15,6 @@
 # include <string.h>
 # include <stdlib.h>
 # include <unistd.h>
-# define BLOCK_SIZE 1024
-
-typedef struct	s_file
-{
-	int		fd;
-	char	*buf;
-	char	tmp[BLOCK_SIZE + 1];
-	size_t	count;
-	int		nread;
-	size_t	len;
-}				t_file;
 
 typedef struct	s_list
 {
@@ -34,7 +23,6 @@ typedef struct	s_list
 	struct s_list	*next;
 }				t_list;
 
-char			*ft_open		(char *name);
 void			*ft_memset		(void *s, int c, size_t n);
 void			*ft_bzero		(void *s, size_t n);
 void			*ft_memcpy		(void *dst, const void *src, size_t len);
@@ -101,5 +89,8 @@ void			ft_lstiter		(t_list *lst, void (*f)(t_list *elem));
 t_list			*ft_lstmap		(t_list *lst, t_list *(*f)(t_list *elem));
 void			*ft_realloc		(void *ptr, size_t size, size_t prev_size);
 void			ft_putnbrl		(int nbr);
+char			*ft_strndup		(const char *s1, size_t num);
+char			*ft_strjoinch	(char const *s1, char c);
+int				ft_copyuntil	(char **dst, char *src, char c);
 
 #endif

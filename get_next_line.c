@@ -5,100 +5,72 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: astrole <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/04/24 21:24:02 by astrole           #+#    #+#             */
-/*   Updated: 2018/04/24 21:24:04 by astrole          ###   ########.fr       */
+/*   Created: 2018/06/05 19:25:34 by astrole           #+#    #+#             */
+/*   Updated: 2018/06/05 19:25:35 by astrole          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
 
-static int		can_find_next_line(char *cache)
-{
-	char	*s;
-
-	s = cache;
-	if (!s)
-		return (0);
-	while (*s)
-		if (*s++ == '\n')
-			return (1);
-	if (!*s)
-		return (0);
-	return (0);
-}
-
-static char		*split(t_cache *cache)
-{
-	int		i;
-	char	*out;
-	char	*new;
-	char	*tmp;
-
-	out = ft_strnew(ft_strlen(cache->cache));
-	if (!out)
-		return (NULL);
-	i = -1;
-	while (cache->cache[++i] != '\n' && cache->cache[i])
-		out[i] = cache->cache[i];
-	tmp = cache->cache;
-	tmp += i + 1;
-	printf("I: %s\n", tmp);
-	new = ft_strnew(ft_strlen(tmp));
-	if (!new)
-		return (NULL);
-	new = ft_strcpy(new, tmp);
-	free(cache->cache);
-	cache->cache = ft_strnew(ft_strlen(new));
-	if (!cache->cache)
-		return (NULL);
-	cache->cache = ft_strcpy(cache->cache, new);
-	cache->len = ft_strlen(cache->cache);
-	free(new);
-	return (out);
-}
-
-int				add_to_cache(int fd, t_cache *cache)
+static int		read_line(const int fd, char **cache)
 {
 	char	tmp[BUFF_SIZE + 1];
 	int		nread;
+	int		i;
+	int		total;
 
-	nread = 0;
-	ft_bzero(tmp, BUFF_SIZE + 1);
-	nread = read(fd, tmp, BUFF_SIZE);
-	if (nread <= 0)
-		return (nread);
-	cache->cache = ft_realloc(cache->cache,
-	(cache->len + nread) + 1 * sizeof(char), (cache->len + 1) * sizeof(char));
-	if (!cache->cache)
-		return (-1);
-	cache->len += nread;
-	ft_strcat(cache->cache, tmp);
-	return (nread);
+	total = 0;
+	while ((nread = read(fd, tmp, BUFF_SIZE)))
+	{
+		i = ft_strlen(*cache);
+		if (nread < 0)
+			return (nread);
+		tmp[nread] = '\0';
+		total += nread;
+		*cache = ft_realloc(*cache, (i + nread) + 1 * sizeof(char),
+			(i + 1) * sizeof(char));
+		if (!*cache)
+			return (-1);
+		*cache = ft_strcat(*cache, tmp);
+		if (ft_strchr(tmp, '\n'))
+			break ;
+	}
+	return (total);
+}
+
+static char		*move_forward(char **cache)
+{
+	char	*out;
+	char	*tmp;
+	char	*new;
+	int		len;
+
+	len = ft_canfind(*cache, "\n");
+	if (len == -1)
+	{
+		len = ft_strlen(*cache);
+		tmp = (*cache) + (len);
+	}
+	else
+		tmp = (*cache) + (len + 1);
+	out = ft_strsub(*cache, 0, len);
+	new = ft_strdup(tmp);
+	free(*cache);
+	*cache = new;
+	return (out);
 }
 
 int				get_next_line(const int fd, char **line)
 {
-	static t_cache	cache = {0, 0};
-	int				out;
+	static char	*cache;
+	int			out;
 
-	if (fd < 0 || line == NULL || read(fd, 0, 0) < 0 || BUFF_SIZE <= 0)
+	if (fd < 0 || line == NULL || read(fd, 0, 0) < 0)
 		return (-1);
-	while (!(can_find_next_line(cache.cache)))
-	{
-		out = add_to_cache(fd, &cache);
-		if (out == 0)
-			break ;
-		else if (out <= -1)
-			return (-1);
-	}
-	*line = split(&cache);
-	printf("Len: %d out: %d %s\n", cache.len, out, cache.cache);
-	if (cache.len == 0 && out == 0)
-	{
-		printf("return 0\n");
-		return ((int)(cache.cache = 0));
-	}
-	printf("return 1\n");
+	if ((out = read_line(fd, &cache)) < 0)
+		return (-1);
+	if (out < BUFF_SIZE && !ft_strlen(cache))
+		return (0);
+	*line = move_forward(&cache);
 	return (1);
 }

@@ -12,15 +12,11 @@
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
-# define BUFF_SIZE 32
+# include <stdlib.h>
 # include <unistd.h>
 # include "libft.h"
 
-typedef	struct	s_cache
-{
-	char	*cache;
-	int		len;
-}				t_cache;
+# define BUFF_SIZE 32
 
 int				get_next_line(const int fd, char **line);
 
